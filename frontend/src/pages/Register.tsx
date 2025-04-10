@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,8 +9,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import axios from 'axios';
 
 const Register = () => {
+  const navigate = useNavigate(); 
+  const [tabValue, setTabValue] = useState<string>('school');
+  const handleVolunteerSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    const first_name = (document.getElementById('volunteer-firstname') as HTMLInputElement).value;
+    const last_name = (document.getElementById('volunteer-lastname') as HTMLInputElement).value;
+    const email = (document.getElementById('volunteer-email') as HTMLInputElement).value;
+    const password = (document.getElementById('volunteer-password') as HTMLInputElement).value;
+    const expertise = (document.getElementById('volunteer-expertise') as HTMLInputElement).value;
+  
+    try {
+      const response = await axios.post<{ id: number }>('/api/volunteers/', {
+        first_name,
+        last_name,
+        email,
+        password,
+        expertise,
+      });
+  
+      const newVolunteerId = response.data.id;
+      navigate(`/volunteers/${newVolunteerId}`);
+    } catch (error) {
+      console.error('Error registering volunteer:', error);
+      alert('Registration failed');
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -25,12 +52,12 @@ const Register = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="school" className="w-full">
+              <Tabs value={tabValue} onValueChange={setTabValue} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-8">
                   <TabsTrigger value="school">Register School</TabsTrigger>
                   <TabsTrigger value="volunteer">Register Volunteer</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="school">
                   <form>
                     <div className="space-y-4">
@@ -86,9 +113,9 @@ const Register = () => {
                     </div>
                   </form>
                 </TabsContent>
-                
+
                 <TabsContent value="volunteer">
-                  <form>
+                  <form onSubmit={handleVolunteerSubmit}>
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
